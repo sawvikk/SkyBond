@@ -1,7 +1,17 @@
 import express from "express";
 import dotenv from "dotenv";
+import { connectDb } from "./database/db.js";
+import cloudinary from 'cloudinary'
+
 dotenv.config(); 
+cloudinary.v2.config({
+    cloud_name:process.env.Cloudinary_Cloud_Name,
+    api_key:process.env.Cloudinary_API,
+    api_secret:process.env.Cloudinary_Secret
+});
 const app = express(); 
+
+app.use(express.json());
 
 const port = process.env.PORT; 
 
@@ -21,7 +31,17 @@ app.get("/", (req, res) => {
     `);
 });
 
+//importing routes
+import userRouter from "./routes/userRoutes.js";
+import postRouter from "./routes/postRoutes.js";
+import authRouter from "./routes/authRoutes.js";
+
+//using routes
+app.use("/api/auth",authRouter);
+app.use("/api/user",userRouter);
+app.use("/api/auth",postRouter);
 
 app.listen(port,() => {
     console.log(`Server is running on http://localhost:${port}`);
-});
+    connectDb();
+}); 
