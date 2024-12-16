@@ -6,7 +6,6 @@ export const isAuth = async (req, res, next) => {
     const token = req.cookies.token;
 
     if (!token) return res.status(403).json({ message: "Unauthorized" });
-
     const decodedData = jwt.verify(token, process.env.JWT_SEC);
 
     if (!decodedData)
@@ -15,7 +14,7 @@ export const isAuth = async (req, res, next) => {
       });
 
     req.user = await User.findById(decodedData.id);
-
+    console.log("123");
     next();
   } catch (error) {
     res.status(500).json({
