@@ -14,7 +14,6 @@ export const isAuth = async (req, res, next) => {
       });
 
     req.user = await User.findById(decodedData.id);
-    console.log("123");
     next();
   } catch (error) {
     res.status(500).json({
