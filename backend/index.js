@@ -40,7 +40,7 @@ import authRouter from "./routes/authRoutes.js";
 //using routes
 app.use("/api/auth",authRouter);
 app.use("/api/user",userRouter);
-app.use("/api/auth",postRouter);
+app.use("/api/post",postRouter);
 
 app.listen(port,() => {
     console.log(`Server is running on http://localhost:${port}`);
