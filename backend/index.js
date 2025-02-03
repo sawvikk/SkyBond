@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import { connectDb } from "./database/db.js";
 import cloudinary from 'cloudinary'
 import cookieParser from "cookie-parser";
+import { Chat } from "./models/ChatModel.js";
+import { User } from "./models/userModel.js";
+import { isAuth } from "./middlewares/isAuth.js";
 dotenv.config(); 
 cloudinary.v2.config({
     cloud_name:process.env.Cloudinary_Cloud_Name,
@@ -32,15 +35,61 @@ app.get("/", (req, res) => {
     `);
 });
 
+app.get("/api/messages/chats", isAuth, async (req, res) => {
+    try {
+      const chats = await Chat.find({
+        users: req.user._id,
+      }).populate({
+        path: "users",
+        select: "name profilePic",
+      });
+  
+      chats.forEach((e) => {
+        e.users = e.users.filter(
+          (user) => user._id.toString() !== req.user._id.toString()
+        );
+      });
+  
+      res.json(chats);
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
+  });
+
+// to get all users
+app.get("/api/user/all", isAuth, async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    const users = await User.find({
+      name: {
+        $regex: search,
+        $options: "i",
+      },
+      _id: { $ne: req.user._id },
+    }).select("-password");
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+
 //importing routes
 import userRouter from "./routes/userRoutes.js";
 import postRouter from "./routes/postRoutes.js";
 import authRouter from "./routes/authRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 
 //using routes
 app.use("/api/auth",authRouter);
 app.use("/api/user",userRouter);
 app.use("/api/post",postRouter);
+app.use("/api/messages",messageRouter);
 
 app.listen(port,() => {
     console.log(`Server is running on http://localhost:${port}`);
